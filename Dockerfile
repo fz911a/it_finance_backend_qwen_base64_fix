@@ -13,20 +13,20 @@ COPY src/main/resources/sql/schema.sql /app/sql/
 # 暴露端口
 EXPOSE 8081
 
-# 设置环境变量（默认值，可在运行时覆盖）
-ENV DB_URL=jdbc:mysql://localhost:3306/it_finance_db?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai
-ENV DB_USERNAME=root
-ENV DB_PASSWORD=12344321
-ENV AI_PROVIDER=openai-compatible
-ENV AI_BASE_URL=https://llm.chudian.site/v1
-ENV AI_API_KEY=sk-ag-94e24cd0c411a9b3bf4d1e366842c2d5
-ENV AI_CHAT_MODEL=qwen3.5-plus
-ENV AI_VISION_MODEL=qwen3.5-plus
-ENV AI_ENABLED=true
-ENV APP_SECURITY_JWT_SECRET=please-change-this-jwt-secret-at-least-32-chars
-ENV APP_SECURITY_TOKEN_EXPIRE_MINUTES=120
-ENV APP_SECURITY_ALLOW_DEMO_LOGIN=false
-ENV APP_IDEMPOTENCY_TTL_SECONDS=120
+# 设置环境变量（在运行时通过外部传入）
+ENV DB_URL
+ENV DB_USERNAME
+ENV DB_PASSWORD
+ENV AI_PROVIDER
+ENV AI_BASE_URL
+ENV AI_API_KEY
+ENV AI_CHAT_MODEL
+ENV AI_VISION_MODEL
+ENV AI_ENABLED
+ENV APP_SECURITY_JWT_SECRET
+ENV APP_SECURITY_TOKEN_EXPIRE_MINUTES
+ENV APP_SECURITY_ALLOW_DEMO_LOGIN
+ENV APP_IDEMPOTENCY_TTL_SECONDS
 
 # 启动应用
 ENTRYPOINT ["java", "-jar", "app.jar"]

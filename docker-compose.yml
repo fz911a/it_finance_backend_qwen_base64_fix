@@ -20,7 +20,7 @@ services:
     restart: always
 
   backend:
-    image: ghcr.io/${GITHUB_REPOSITORY}:latest
+    image: ghcr.io/${GITHUB_ACTOR}/it-finance-backend:latest
     container_name: it-finance-backend
     environment:
       DB_URL: jdbc:mysql://mysql:3306/it_finance_db?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai
