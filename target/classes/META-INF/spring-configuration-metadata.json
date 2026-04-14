@@ -1,0 +1,75 @@
+{
+  "groups": [
+    {
+      "name": "app.ai",
+      "type": "com.example.itfinance.config.AiProperties",
+      "sourceType": "com.example.itfinance.config.AiProperties"
+    },
+    {
+      "name": "app.idempotency",
+      "type": "com.example.itfinance.config.IdempotencyProperties",
+      "sourceType": "com.example.itfinance.config.IdempotencyProperties"
+    },
+    {
+      "name": "app.security",
+      "type": "com.example.itfinance.config.JwtProperties",
+      "sourceType": "com.example.itfinance.config.JwtProperties"
+    }
+  ],
+  "properties": [
+    {
+      "name": "app.ai.api-key",
+      "type": "java.lang.String",
+      "sourceType": "com.example.itfinance.config.AiProperties"
+    },
+    {
+      "name": "app.ai.base-url",
+      "type": "java.lang.String",
+      "sourceType": "com.example.itfinance.config.AiProperties"
+    },
+    {
+      "name": "app.ai.chat-model",
+      "type": "java.lang.String",
+      "sourceType": "com.example.itfinance.config.AiProperties"
+    },
+    {
+      "name": "app.ai.enabled",
+      "type": "java.lang.Boolean",
+      "sourceType": "com.example.itfinance.config.AiProperties"
+    },
+    {
+      "name": "app.ai.provider",
+      "type": "java.lang.String",
+      "sourceType": "com.example.itfinance.config.AiProperties"
+    },
+    {
+      "name": "app.ai.vision-model",
+      "type": "java.lang.String",
+      "sourceType": "com.example.itfinance.config.AiProperties"
+    },
+    {
+      "name": "app.idempotency.ttl-seconds",
+      "type": "java.lang.Long",
+      "sourceType": "com.example.itfinance.config.IdempotencyProperties"
+    },
+    {
+      "name": "app.security.allow-demo-login",
+      "type": "java.lang.Boolean",
+      "sourceType": "com.example.itfinance.config.JwtProperties"
+    },
+    {
+      "name": "app.security.jwt-secret",
+      "type": "java.lang.String",
+      "sourceType": "com.example.itfinance.config.JwtProperties"
+    },
+    {
+      "name": "app.security.token-expire-minutes",
+      "type": "java.lang.Long",
+      "sourceType": "com.example.itfinance.config.JwtProperties"
+    }
+  ],
+  "hints": [],
+  "ignored": {
+    "properties": []
+  }
+}

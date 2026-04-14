@@ -1,0 +1,52 @@
+
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql-it-finance
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: it_finance_db
+      MYSQL_USER: itfinance
+      MYSQL_PASSWORD: itfinance123
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./src/main/resources/sql/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    ports:
+      - "3306:3306"
+    networks:
+      - it-finance-network
+    restart: always
+
+  backend:
+    image: ghcr.io/${GITHUB_REPOSITORY}:latest
+    container_name: it-finance-backend
+    environment:
+      DB_URL: jdbc:mysql://mysql:3306/it_finance_db?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai
+      DB_USERNAME: itfinance
+      DB_PASSWORD: itfinance123
+      AI_PROVIDER: openai-compatible
+      AI_BASE_URL: https://llm.chudian.site/v1
+      AI_API_KEY: sk-ag-94e24cd0c411a9b3bf4d1e366842c2d5
+      AI_CHAT_MODEL: qwen3.5-plus
+      AI_VISION_MODEL: qwen3.5-plus
+      AI_ENABLED: true
+      APP_SECURITY_JWT_SECRET: your-secure-jwt-secret-at-least-32-chars
+      APP_SECURITY_TOKEN_EXPIRE_MINUTES: 120
+      APP_SECURITY_ALLOW_DEMO_LOGIN: false
+      APP_IDEMPOTENCY_TTL_SECONDS: 120
+    ports:
+      - "8081:8081"
+    depends_on:
+      - mysql
+    networks:
+      - it-finance-network
+    restart: always
+
+volumes:
+  mysql-data:
+
+networks:
+  it-finance-network:
+    driver: bridge
