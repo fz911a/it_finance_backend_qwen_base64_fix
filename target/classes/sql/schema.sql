@@ -1,0 +1,44 @@
+CREATE DATABASE IF NOT EXISTS it_finance_db DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+USE it_finance_db;
+
+DROP TABLE IF EXISTS ai_chat_log;
+DROP TABLE IF EXISTS recognition_record;
+DROP TABLE IF EXISTS face_profile;
+DROP TABLE IF EXISTS expense_record;
+DROP TABLE IF EXISTS operation_log;
+DROP TABLE IF EXISTS tax_rule;
+DROP TABLE IF EXISTS salary_project_allocation;
+DROP TABLE IF EXISTS salary_record;
+DROP TABLE IF EXISTS employee;
+DROP TABLE IF EXISTS payment_invoice;
+DROP TABLE IF EXISTS payment;
+DROP TABLE IF EXISTS invoice;
+DROP TABLE IF EXISTS project;
+DROP TABLE IF EXISTS sys_user;
+
+CREATE TABLE sys_user (id BIGINT PRIMARY KEY AUTO_INCREMENT, username VARCHAR(50), password VARCHAR(255), real_name VARCHAR(50), role VARCHAR(30), status TINYINT DEFAULT 1, create_time DATETIME DEFAULT CURRENT_TIMESTAMP);
+CREATE TABLE project (id BIGINT PRIMARY KEY AUTO_INCREMENT, project_name VARCHAR(100), project_code VARCHAR(50), manager_id BIGINT, customer_name VARCHAR(100), budget_amount DECIMAL(12,2), start_date DATE, end_date DATE, status VARCHAR(30), remark VARCHAR(255));
+CREATE TABLE invoice (id BIGINT PRIMARY KEY AUTO_INCREMENT, invoice_no VARCHAR(100), invoice_date DATE, amount DECIMAL(12,2), tax_amount DECIMAL(12,2), customer_name VARCHAR(100), project_id BIGINT, file_url VARCHAR(255), ocr_result TEXT, description VARCHAR(255), paid_amount DECIMAL(12,2) DEFAULT 0, unpaid_amount DECIMAL(12,2) DEFAULT 0, status VARCHAR(30), create_by BIGINT, create_time DATETIME DEFAULT CURRENT_TIMESTAMP);
+CREATE TABLE payment (id BIGINT PRIMARY KEY AUTO_INCREMENT, project_id BIGINT, payment_date DATE, amount DECIMAL(12,2), method VARCHAR(20), remark VARCHAR(255), create_by BIGINT, create_time DATETIME DEFAULT CURRENT_TIMESTAMP);
+CREATE TABLE payment_invoice (id BIGINT PRIMARY KEY AUTO_INCREMENT, payment_id BIGINT, invoice_id BIGINT, allocated_amount DECIMAL(12,2));
+CREATE TABLE employee (id BIGINT PRIMARY KEY AUTO_INCREMENT, name VARCHAR(50), position_name VARCHAR(50), phone VARCHAR(20), status TINYINT DEFAULT 1);
+CREATE TABLE salary_record (id BIGINT PRIMARY KEY AUTO_INCREMENT, employee_id BIGINT, pay_period VARCHAR(20), gross_salary DECIMAL(12,2), personal_tax DECIMAL(12,2), actual_salary DECIMAL(12,2), pay_date DATE, remark VARCHAR(255));
+CREATE TABLE salary_project_allocation (id BIGINT PRIMARY KEY AUTO_INCREMENT, salary_id BIGINT, project_id BIGINT, allocation_type VARCHAR(20), ratio DECIMAL(5,2), amount DECIMAL(12,2));
+CREATE TABLE tax_rule (id BIGINT PRIMARY KEY AUTO_INCREMENT, rule_name VARCHAR(100), tax_type VARCHAR(50), calc_type VARCHAR(20), rate DECIMAL(8,4), ladder_json TEXT, scope_type VARCHAR(20), scope_id BIGINT, status TINYINT DEFAULT 1);
+CREATE TABLE operation_log (id BIGINT PRIMARY KEY AUTO_INCREMENT, user_id BIGINT, module_name VARCHAR(50), operation_type VARCHAR(50), content TEXT, ip VARCHAR(50), create_time DATETIME DEFAULT CURRENT_TIMESTAMP);
+CREATE TABLE face_profile (id BIGINT PRIMARY KEY AUTO_INCREMENT, employee_id BIGINT, employee_name VARCHAR(50), face_image_url VARCHAR(255), face_embedding TEXT, project_id BIGINT, status VARCHAR(20), create_time DATETIME DEFAULT CURRENT_TIMESTAMP);
+CREATE TABLE recognition_record (id BIGINT PRIMARY KEY AUTO_INCREMENT, recognition_type VARCHAR(30), source_file_url VARCHAR(255), result_json TEXT, confidence_score DECIMAL(5,2), operator_id BIGINT, create_time DATETIME DEFAULT CURRENT_TIMESTAMP);
+CREATE TABLE expense_record (id BIGINT PRIMARY KEY AUTO_INCREMENT, project_id BIGINT, employee_id BIGINT, expense_type VARCHAR(50), amount DECIMAL(12,2), expense_date DATE, merchant_name VARCHAR(100), receipt_url VARCHAR(255), ai_summary VARCHAR(255), status VARCHAR(30) DEFAULT '待提交', create_time DATETIME DEFAULT CURRENT_TIMESTAMP);
+CREATE TABLE ai_chat_log (id BIGINT PRIMARY KEY AUTO_INCREMENT, user_id BIGINT, module_name VARCHAR(50), prompt_text TEXT, result_text TEXT, parsed_json TEXT, create_time DATETIME DEFAULT CURRENT_TIMESTAMP);
+
+INSERT INTO sys_user (id, username, password, real_name, role) VALUES (1,'admin','123456','系统管理员','ADMIN'),(2,'finance','123456','财务人员','FINANCE'),(3,'manager1','123456','项目负责人','PROJECT_MANAGER');
+INSERT INTO project (id, project_name, project_code, manager_id, customer_name, budget_amount, start_date, end_date, status, remark) VALUES (1,'智慧运维平台','IT2026001',3,'星河科技',300000.00,'2026-01-01','2026-12-31','进行中','重点项目'),(2,'企业数据中台','IT2026002',3,'远航信息',500000.00,'2026-01-15','2026-11-30','进行中','企业级平台'),(3,'移动审批系统','IT2026003',3,'海纳软件',180000.00,'2026-02-01','2026-10-31','进行中','移动端项目');
+INSERT INTO invoice (id, invoice_no, invoice_date, amount, tax_amount, customer_name, project_id, file_url, paid_amount, unpaid_amount, status, create_by) VALUES (1,'FP20260401001','2026-04-01',50000.00,3000.00,'星河科技',1,'/uploads/demo_invoice1.png',32000.00,18000.00,'部分回款',1),(2,'FP20260315006','2026-03-15',80000.00,4800.00,'远航信息',2,'/uploads/demo_invoice2.png',80000.00,0.00,'已回款',1),(3,'FP20260309003','2026-03-09',35000.00,2100.00,'海纳软件',3,'/uploads/demo_invoice3.png',0.00,35000.00,'未回款',1);
+INSERT INTO payment (id, project_id, payment_date, amount, method, remark, create_by) VALUES (1,1,'2026-04-03',32000.00,'银行','第一阶段回款',1),(2,2,'2026-03-20',80000.00,'银行','全额回款',1);
+INSERT INTO payment_invoice (payment_id, invoice_id, allocated_amount) VALUES (1,1,32000.00),(2,2,80000.00);
+INSERT INTO employee (id, name, position_name, phone, status) VALUES (1,'张三','前端开发','13800000001',1),(2,'李四','后端开发','13800000002',1),(3,'王五','测试工程师','13800000003',1);
+INSERT INTO salary_record (id, employee_id, pay_period, gross_salary, personal_tax, actual_salary, pay_date, remark) VALUES (1,1,'2026-03',12000.00,360.00,11640.00,'2026-03-31','3月工资'),(2,2,'2026-03',15000.00,450.00,14550.00,'2026-03-31','3月工资'),(3,3,'2026-03',9000.00,270.00,8730.00,'2026-03-31','3月工资');
+INSERT INTO salary_project_allocation (salary_id, project_id, allocation_type, ratio, amount) VALUES (1,1,'按比例',70.00,8400.00),(2,2,'按比例',100.00,15000.00),(3,3,'按比例',60.00,5400.00);
+INSERT INTO tax_rule (rule_name, tax_type, calc_type, rate, ladder_json, scope_type, scope_id, status) VALUES ('个人所得税','人员','阶梯',NULL,'3%~45%','按人员配置',NULL,1),('增值税','项目','比例',6.0000,NULL,'按项目配置',1,1),('企业所得税','全局','比例',25.0000,NULL,'全局配置',NULL,1);
+INSERT INTO face_profile (employee_id, employee_name, face_image_url, face_embedding, project_id, status) VALUES (1,'张三','/uploads/demo_face_zhangsan.png','demo-vector-001',1,'已录入');
+INSERT INTO expense_record (project_id, employee_id, expense_type, amount, expense_date, merchant_name, receipt_url, ai_summary, status) VALUES (1,1,'差旅费',560.00,'2026-04-02','星海酒店','/receipt/r1.jpg','AI 识别为差旅费小票','待审核');
