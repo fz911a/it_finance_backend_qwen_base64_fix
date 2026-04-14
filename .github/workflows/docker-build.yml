@@ -13,6 +13,10 @@ on:
           - staging
           - production
 
+permissions:
+  packages: write
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -44,9 +48,6 @@ jobs:
         with:
           context: .
           push: true
-          tags: ghcr.io/${{ github.actor }}/it-finance-backend:latest,ghcr.io/${{ github.actor }}/it-finance-backend:${{ github.sha }}
+          tags: ghcr.io/${{ github.repository_owner }}/it-finance-backend:latest,ghcr.io/${{ github.repository_owner }}/it-finance-backend:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          build-args: DB_PASSWORD=${{ secrets.DB_PASSWORD || '' }}
-            AI_API_KEY=${{ secrets.AI_API_KEY || '' }}
-            APP_SECURITY_JWT_SECRET=${{ secrets.APP_SECURITY_JWT_SECRET || '' }}
