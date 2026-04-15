@@ -22,4 +22,21 @@ public class ReportController {
                                                           @RequestParam(required = false) String endDate) {
         return ApiResponse.ok(reportService.profitReport(projectId, startDate, endDate));
     }
+
+    @GetMapping("/trend")
+    public ApiResponse<Map<String, Object>> getTrendData(@RequestParam(required = false) String startDate,
+                                                         @RequestParam(required = false) String endDate) {
+        return ApiResponse.ok(reportService.getTrendData(startDate, endDate));
+    }
+
+    @GetMapping("/category")
+    public ApiResponse<Map<String, Object>> getCategoryData(@RequestParam(required = false) String startDate,
+                                                            @RequestParam(required = false) String endDate) {
+        return ApiResponse.ok(reportService.getCategoryData(startDate, endDate));
+    }
+
+    @GetMapping("/monthly-comparison")
+    public ApiResponse<Map<String, Object>> getMonthlyComparisonData(@RequestParam(required = false) String year) {
+        return ApiResponse.ok(reportService.getMonthlyComparisonData(year));
+    }
 }
