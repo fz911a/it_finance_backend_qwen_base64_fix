@@ -25,7 +25,9 @@ public class SecurityConfig {
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/login", "/api/auth/refresh", "/uploads/**", "/error").permitAll()
-                        .requestMatchers("/api/report/trend", "/api/report/category", "/api/report/monthly-comparison").permitAll()
+                        .requestMatchers("/api/report/trend", "/api/report/category", "/api/report/monthly-comparison")
+                        .permitAll()
+                        .requestMatchers("/api/ai/**", "/api/report/export/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/expense/approval/pending").hasAnyRole("ADMIN", "FINANCE")
                         .requestMatchers(HttpMethod.POST, "/api/expense/approval/**").hasAnyRole("ADMIN", "FINANCE")
                         .requestMatchers(HttpMethod.POST, "/api/payment/allocate-auto/**",

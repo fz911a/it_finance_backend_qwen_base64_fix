@@ -6,4 +6,6 @@ import java.util.List;
 
 public interface SalaryService {
     List<SalaryRecord> list();
+
+    SalaryRecord create(SalaryRecord record);
 }

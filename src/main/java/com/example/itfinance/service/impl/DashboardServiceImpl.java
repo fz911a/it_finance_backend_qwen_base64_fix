@@ -31,7 +31,21 @@ public class DashboardServiceImpl implements DashboardService {
             BigDecimal receivable = sum("SELECT COALESCE(SUM(unpaid_amount), 0) FROM invoice");
             BigDecimal cashFlow = totalIncome.subtract(totalCost);
             BigDecimal netProfit = totalIncome.subtract(totalCost).subtract(totalTax);
-            return new DashboardSummary(totalIncome, totalCost, totalTax, netProfit, cashFlow, receivable);
+
+            // 新增业务统计数据
+            Long invoiceCount = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM invoice", Long.class);
+            BigDecimal monthlyIncome = sum(
+                    "SELECT COALESCE(SUM(amount), 0) FROM payment WHERE DATE_FORMAT(create_time, '%Y-%m') = DATE_FORMAT(CURRENT_DATE, '%Y-%m')");
+            Long pendingSalaryCount = jdbcTemplate
+                    .queryForObject("SELECT COUNT(*) FROM salary_record WHERE status = '待发放'", Long.class);
+
+            DashboardSummary summary = new DashboardSummary(totalIncome, totalCost, totalTax, netProfit, cashFlow,
+                    receivable);
+            summary.setInvoiceCount(invoiceCount == null ? 0L : invoiceCount);
+            summary.setMonthlyIncome(monthlyIncome);
+            summary.setPendingSalaryCount(pendingSalaryCount == null ? 0L : pendingSalaryCount);
+
+            return summary;
         } catch (Exception ex) {
             return new DashboardSummary(
                     BigDecimal.ZERO,

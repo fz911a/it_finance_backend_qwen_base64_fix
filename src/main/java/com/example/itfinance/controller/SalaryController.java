@@ -21,4 +21,13 @@ public class SalaryController {
     public ApiResponse<List<SalaryRecord>> list() {
         return ApiResponse.ok(salaryService.list());
     }
+
+    @PostMapping("/add")
+    public ApiResponse<SalaryRecord> add(@RequestBody SalaryRecord record) {
+        try {
+            return ApiResponse.ok("新增成功", salaryService.create(record));
+        } catch (Exception e) {
+            return ApiResponse.fail("工资记录新增失败：" + e.getMessage());
+        }
+    }
 }

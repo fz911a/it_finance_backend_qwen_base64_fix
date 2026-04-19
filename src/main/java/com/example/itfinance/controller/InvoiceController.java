@@ -25,7 +25,8 @@ public class InvoiceController {
     @GetMapping("/detail/{id}")
     public ApiResponse<Invoice> detail(@PathVariable Long id) {
         Invoice invoice = invoiceService.getById(id);
-        if (invoice == null) return ApiResponse.fail("未找到发票");
+        if (invoice == null)
+            return ApiResponse.fail("未找到发票");
         return ApiResponse.ok(invoice);
     }
 
@@ -35,6 +36,16 @@ public class InvoiceController {
             return ApiResponse.ok("新增成功", invoiceService.create(invoice));
         } catch (Exception e) {
             return ApiResponse.fail("发票保存失败：" + e.getMessage());
+        }
+    }
+
+    @PutMapping("/update/{id}")
+    public ApiResponse<Invoice> update(@PathVariable Long id, @RequestBody Invoice invoice) {
+        invoice.setId(id);
+        try {
+            return ApiResponse.ok("更新成功", invoiceService.update(invoice));
+        } catch (Exception e) {
+            return ApiResponse.fail("发票更新失败：" + e.getMessage());
         }
     }
 

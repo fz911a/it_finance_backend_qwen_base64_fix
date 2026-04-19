@@ -145,10 +145,10 @@ public class AiServiceImpl implements AiService {
                     "SELECT IFNULL(SUM(amount),0) FROM expense_record WHERE project_id=? AND expense_date>=? AND expense_date<=?",
                     projectId, startDate, endDate);
             Double paymentTotal = queryNumber(
-                    "SELECT IFNULL(SUM(amount),0) FROM payment_record WHERE project_id=? AND payment_date>=? AND payment_date<=?",
+                    "SELECT IFNULL(SUM(amount),0) FROM payment WHERE project_id=? AND payment_date>=? AND payment_date<=?",
                     projectId, startDate, endDate);
             Double invoiceUnpaid = queryNumber(
-                    "SELECT IFNULL(SUM(unpaid_amount),0) FROM invoice_record WHERE project_id=? AND invoice_date>=? AND invoice_date<=?",
+                    "SELECT IFNULL(SUM(unpaid_amount),0) FROM invoice WHERE project_id=? AND invoice_date>=? AND invoice_date<=?",
                     projectId, startDate, endDate);
             Long pendingExpenseCount = queryLong(
                     "SELECT COUNT(*) FROM expense_record WHERE project_id=? AND expense_date>=? AND expense_date<=? AND status IN ('待提交','待审核')",

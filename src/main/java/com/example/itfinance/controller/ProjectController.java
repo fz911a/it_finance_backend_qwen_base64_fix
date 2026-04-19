@@ -21,4 +21,29 @@ public class ProjectController {
     public ApiResponse<List<Project>> list() {
         return ApiResponse.ok(projectService.list());
     }
+
+    @PostMapping("/add")
+    public ApiResponse<Project> add(@RequestBody Project project) {
+        try {
+            return ApiResponse.ok("新增成功", projectService.create(project));
+        } catch (Exception e) {
+            return ApiResponse.fail("项目新增失败：" + e.getMessage());
+        }
+    }
+
+    @PutMapping("/update/{id}")
+    public ApiResponse<Project> update(@PathVariable Long id, @RequestBody Project project) {
+        project.setId(id);
+        try {
+            return ApiResponse.ok("更新成功", projectService.update(project));
+        } catch (Exception e) {
+            return ApiResponse.fail("项目更新失败：" + e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/delete/{id}")
+    public ApiResponse<String> delete(@PathVariable Long id) {
+        projectService.deleteById(id);
+        return ApiResponse.ok("删除成功", "ok");
+    }
 }

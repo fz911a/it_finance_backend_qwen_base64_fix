@@ -93,6 +93,24 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
     @Override
+    public Invoice update(Invoice invoice) {
+        Long projectId = null;
+        if (invoice.getProjectName() != null && !invoice.getProjectName().isBlank()) {
+            List<Long> ids = jdbcTemplate.query("SELECT id FROM project WHERE project_name = ? LIMIT 1",
+                    (rs, rowNum) -> rs.getLong(1), invoice.getProjectName());
+            if (!ids.isEmpty())
+                projectId = ids.get(0);
+        }
+        String invoiceDate = normalizeDate(invoice.getInvoiceDate());
+        jdbcTemplate.update(
+                "UPDATE invoice SET invoice_no=?, invoice_date=?, amount=?, tax_amount=?, customer_name=?, project_id=?, file_url=?, ocr_result=?, status=? WHERE id=?",
+                invoice.getInvoiceNo(), invoiceDate, invoice.getAmount(), invoice.getTaxAmount(),
+                invoice.getCustomerName(), projectId, invoice.getFileUrl(), invoice.getOcrResult(),
+                invoice.getStatus(), invoice.getId());
+        return getById(invoice.getId());
+    }
+
+    @Override
     public void deleteById(Long id) {
         jdbcTemplate.update("DELETE FROM payment_invoice WHERE invoice_id = ?", id);
         jdbcTemplate.update("DELETE FROM invoice WHERE id = ?", id);
