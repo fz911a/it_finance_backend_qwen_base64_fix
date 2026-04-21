@@ -20,6 +20,20 @@ public class DashboardServiceImpl implements DashboardService {
         return value == null ? BigDecimal.ZERO : value;
     }
 
+    private Long pendingSalaryCount() {
+        try {
+            // Compatibility path for schemas that keep a status column.
+            Long value = jdbcTemplate.queryForObject(
+                    "SELECT COUNT(*) FROM salary_record WHERE status = '待发放'", Long.class);
+            return value == null ? 0L : value;
+        } catch (Exception ignored) {
+            // Current schema marks unpaid salaries by missing pay_date.
+            Long value = jdbcTemplate.queryForObject(
+                    "SELECT COUNT(*) FROM salary_record WHERE pay_date IS NULL", Long.class);
+            return value == null ? 0L : value;
+        }
+    }
+
     @Override
     public DashboardSummary getSummary() {
         try {
@@ -36,14 +50,14 @@ public class DashboardServiceImpl implements DashboardService {
             Long invoiceCount = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM invoice", Long.class);
             BigDecimal monthlyIncome = sum(
                     "SELECT COALESCE(SUM(amount), 0) FROM payment WHERE DATE_FORMAT(create_time, '%Y-%m') = DATE_FORMAT(CURRENT_DATE, '%Y-%m')");
-            Long pendingSalaryCount = jdbcTemplate
-                    .queryForObject("SELECT COUNT(*) FROM salary_record WHERE status = '待发放'", Long.class);
+            Long pendingSalaryCount = pendingSalaryCount();
 
-            DashboardSummary summary = new DashboardSummary(totalIncome, totalCost, totalTax, netProfit, cashFlow,
-                    receivable);
-            summary.setInvoiceCount(invoiceCount == null ? 0L : invoiceCount);
-            summary.setMonthlyIncome(monthlyIncome);
-            summary.setPendingSalaryCount(pendingSalaryCount == null ? 0L : pendingSalaryCount);
+            DashboardSummary summary = new DashboardSummary(
+                    totalIncome, totalCost, totalTax, netProfit, cashFlow,
+                    receivable,
+                    invoiceCount == null ? 0L : invoiceCount,
+                    monthlyIncome,
+                    pendingSalaryCount == null ? 0L : pendingSalaryCount);
 
             return summary;
         } catch (Exception ex) {
@@ -53,7 +67,10 @@ public class DashboardServiceImpl implements DashboardService {
                     BigDecimal.ZERO,
                     BigDecimal.ZERO,
                     BigDecimal.ZERO,
-                    BigDecimal.ZERO);
+                    BigDecimal.ZERO,
+                    0L,
+                    BigDecimal.ZERO,
+                    0L);
         }
     }
 }

@@ -24,7 +24,10 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/login", "/api/auth/refresh", "/uploads/**", "/error").permitAll()
+                        .requestMatchers("/api/auth/login", "/api/auth/refresh", "/api/auth/face-login", "/uploads/**",
+                                "/error")
+                        .permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/file/upload").permitAll()
                         .requestMatchers("/api/report/trend", "/api/report/category", "/api/report/monthly-comparison")
                         .permitAll()
                         .requestMatchers("/api/ai/**", "/api/report/export/**").permitAll()
@@ -33,6 +36,12 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/payment/allocate-auto/**",
                                 "/api/payment/allocate-manual/**")
                         .hasAnyRole("ADMIN", "FINANCE")
+                        .requestMatchers(HttpMethod.GET, "/api/face/list", "/api/face/logs").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/face/logs/**", "/api/face/profile/**")
+                        .hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/face/enroll").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/face/profile/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/user/admin/create-with-face").hasRole("ADMIN")
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();

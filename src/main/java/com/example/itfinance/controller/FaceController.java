@@ -1,9 +1,11 @@
 package com.example.itfinance.controller;
 
 import com.example.itfinance.common.ApiResponse;
+import com.example.itfinance.dto.FaceStatusUpdateRequest;
 import com.example.itfinance.dto.FaceRecognizeRequest;
 import com.example.itfinance.entity.FaceProfile;
 import com.example.itfinance.service.FaceService;
+import jakarta.validation.Valid;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,17 +19,33 @@ import java.util.Map;
 public class FaceController {
     private final FaceService faceService;
     private final JdbcTemplate jdbcTemplate;
-    public FaceController(FaceService faceService, JdbcTemplate jdbcTemplate) { this.faceService = faceService; this.jdbcTemplate = jdbcTemplate; }
+
+    public FaceController(FaceService faceService, JdbcTemplate jdbcTemplate) {
+        this.faceService = faceService;
+        this.jdbcTemplate = jdbcTemplate;
+    }
+
     @GetMapping("/list")
-    public ApiResponse<List<FaceProfile>> list() { return ApiResponse.ok(faceService.list()); }
+    public ApiResponse<List<FaceProfile>> list() {
+        return ApiResponse.ok(faceService.list());
+    }
+
     @GetMapping("/logs")
-    public ApiResponse<List<Map<String,Object>>> logs() {
+    public ApiResponse<List<Map<String, Object>>> logs() {
         String sql = "SELECT id, recognition_type, source_file_url, result_json, confidence_score, DATE_FORMAT(create_time, '%Y-%m-%d %H:%i:%s') create_time FROM recognition_record WHERE recognition_type = 'face' ORDER BY id DESC";
-        List<Map<String,Object>> data = jdbcTemplate.query(sql, (rs, rowNum) -> {
-            Map<String,Object> m = new LinkedHashMap<>();
-            m.put("id", rs.getLong("id")); m.put("type", rs.getString("recognition_type")); m.put("sourceFileUrl", rs.getString("source_file_url")); m.put("result", rs.getString("result_json")); m.put("confidence", rs.getBigDecimal("confidence_score")); m.put("createTime", rs.getString("create_time")); return m; });
+        List<Map<String, Object>> data = jdbcTemplate.query(sql, (rs, rowNum) -> {
+            Map<String, Object> m = new LinkedHashMap<>();
+            m.put("id", rs.getLong("id"));
+            m.put("type", rs.getString("recognition_type"));
+            m.put("sourceFileUrl", rs.getString("source_file_url"));
+            m.put("result", rs.getString("result_json"));
+            m.put("confidence", rs.getBigDecimal("confidence_score"));
+            m.put("createTime", rs.getString("create_time"));
+            return m;
+        });
         return ApiResponse.ok(data);
     }
+
     @DeleteMapping("/logs/{id}")
     public ApiResponse<String> deleteLog(@PathVariable Long id) {
         jdbcTemplate.update("DELETE FROM recognition_record WHERE id = ? AND recognition_type = ?", id, "face");
@@ -35,7 +53,24 @@ public class FaceController {
     }
 
     @PostMapping("/enroll")
-    public ApiResponse<FaceProfile> enroll(@RequestBody FaceProfile faceProfile) { return ApiResponse.ok("录入成功", faceService.enroll(faceProfile)); }
+    public ApiResponse<FaceProfile> enroll(@RequestBody FaceProfile faceProfile) {
+        return ApiResponse.ok("录入成功", faceService.enroll(faceProfile));
+    }
+
+    @DeleteMapping("/profile/{id}")
+    public ApiResponse<String> deleteProfile(@PathVariable Long id) {
+        faceService.deleteById(id);
+        return ApiResponse.ok("删除成功", "ok");
+    }
+
+    @PutMapping("/profile/{id}/status")
+    public ApiResponse<FaceProfile> updateStatus(@PathVariable Long id,
+            @Valid @RequestBody FaceStatusUpdateRequest request) {
+        return ApiResponse.ok("状态更新成功", faceService.updateStatus(id, request.getStatus()));
+    }
+
     @PostMapping("/recognize")
-    public ApiResponse<Map<String, Object>> recognize(@RequestBody FaceRecognizeRequest request) { return ApiResponse.ok(faceService.recognize(request)); }
+    public ApiResponse<Map<String, Object>> recognize(@RequestBody FaceRecognizeRequest request) {
+        return ApiResponse.ok(faceService.recognize(request));
+    }
 }

@@ -45,7 +45,7 @@ public class ReportController {
             @RequestParam(required = false) Long projectId,
             @RequestParam(required = false) String startDate,
             @RequestParam(required = false) String endDate,
-            javax.servlet.http.HttpServletResponse response) throws java.io.IOException {
+            jakarta.servlet.http.HttpServletResponse response) throws java.io.IOException {
         byte[] data = reportService.exportReport(format, projectId, startDate, endDate);
         String ext = format.toLowerCase().equals("excel") ? "xlsx" : format.toLowerCase();
         String filename = "report_" + System.currentTimeMillis() + "." + ext;

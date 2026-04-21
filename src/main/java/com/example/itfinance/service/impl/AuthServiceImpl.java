@@ -1,11 +1,13 @@
 package com.example.itfinance.service.impl;
 
 import com.example.itfinance.config.JwtProperties;
+import com.example.itfinance.dto.FaceRecognizeRequest;
 import com.example.itfinance.dto.LoginRequest;
 import com.example.itfinance.dto.LoginResponse;
 import com.example.itfinance.entity.User;
 import com.example.itfinance.security.JwtTokenProvider;
 import com.example.itfinance.service.AuthService;
+import com.example.itfinance.service.FaceService;
 import io.jsonwebtoken.Claims;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,14 +23,16 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final JwtProperties jwtProperties;
+    private final FaceService faceService;
     private final Map<Long, User> userMap = new HashMap<>();
 
     public AuthServiceImpl(JdbcTemplate jdbcTemplate, PasswordEncoder passwordEncoder,
-            JwtTokenProvider jwtTokenProvider, JwtProperties jwtProperties) {
+            JwtTokenProvider jwtTokenProvider, JwtProperties jwtProperties, FaceService faceService) {
         this.jdbcTemplate = jdbcTemplate;
         this.passwordEncoder = passwordEncoder;
         this.jwtTokenProvider = jwtTokenProvider;
         this.jwtProperties = jwtProperties;
+        this.faceService = faceService;
         initDemoUsers();
     }
 
@@ -97,6 +101,79 @@ public class AuthServiceImpl implements AuthService {
         String refreshToken = jwtTokenProvider.generateRefreshToken(user.id(), user.username(), user.role(),
                 user.realName());
         return new LoginResponse(user.id(), user.username(), user.realName(), user.role(), token, refreshToken);
+    }
+
+    @Override
+    public LoginResponse faceLogin(String imageUrl) {
+        FaceRecognizeRequest recognizeRequest = new FaceRecognizeRequest();
+        recognizeRequest.setImageUrl(imageUrl);
+        Map<String, Object> result = faceService.recognize(recognizeRequest);
+        if (!Boolean.TRUE.equals(result.get("matched"))) {
+            String message = String.valueOf(result.getOrDefault("message", "人脸识别失败"));
+            throw new IllegalArgumentException(message);
+        }
+
+        LoginUserRow user = resolveUserByFaceResult(result);
+        String token = jwtTokenProvider.generateToken(user.id(), user.username(), user.role(), user.realName());
+        String refreshToken = jwtTokenProvider.generateRefreshToken(user.id(), user.username(), user.role(),
+                user.realName());
+        return new LoginResponse(user.id(), user.username(), user.realName(), user.role(), token, refreshToken);
+    }
+
+    private LoginUserRow resolveUserByFaceResult(Map<String, Object> faceResult) {
+        Long employeeId = toLong(faceResult.get("employeeId"));
+        String employeeName = faceResult.get("employeeName") == null ? null
+                : String.valueOf(faceResult.get("employeeName"));
+
+        if (employeeId != null) {
+            List<LoginUserRow> usersById = queryActiveUserById(employeeId);
+            if (!usersById.isEmpty()) {
+                return usersById.get(0);
+            }
+        }
+
+        if (employeeName != null && !employeeName.isBlank()) {
+            List<LoginUserRow> usersByName = queryActiveUserByRealName(employeeName);
+            if (!usersByName.isEmpty()) {
+                return usersByName.get(0);
+            }
+        }
+
+        throw new IllegalArgumentException("识别到的人脸未绑定系统账号，请先在系统中创建并绑定对应用户");
+    }
+
+    private List<LoginUserRow> queryActiveUserById(Long id) {
+        String sql = "SELECT id, username, password, real_name, role FROM sys_user WHERE id = ? AND status = 1 LIMIT 1";
+        return jdbcTemplate.query(sql, (rs, rowNum) -> new LoginUserRow(
+                rs.getLong("id"),
+                rs.getString("username"),
+                rs.getString("password"),
+                rs.getString("real_name"),
+                rs.getString("role")), id);
+    }
+
+    private List<LoginUserRow> queryActiveUserByRealName(String realName) {
+        String sql = "SELECT id, username, password, real_name, role FROM sys_user WHERE real_name = ? AND status = 1 LIMIT 1";
+        return jdbcTemplate.query(sql, (rs, rowNum) -> new LoginUserRow(
+                rs.getLong("id"),
+                rs.getString("username"),
+                rs.getString("password"),
+                rs.getString("real_name"),
+                rs.getString("role")), realName);
+    }
+
+    private Long toLong(Object value) {
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof Number number) {
+            return number.longValue();
+        }
+        try {
+            return Long.parseLong(String.valueOf(value));
+        } catch (NumberFormatException ignored) {
+            return null;
+        }
     }
 
     @Override

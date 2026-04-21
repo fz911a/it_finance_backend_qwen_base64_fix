@@ -7,6 +7,12 @@ import java.util.Map;
 
 public interface FaceService {
     List<FaceProfile> list();
+
     FaceProfile enroll(FaceProfile faceProfile);
+
+    void deleteById(Long id);
+
+    FaceProfile updateStatus(Long id, String status);
+
     Map<String, Object> recognize(FaceRecognizeRequest request);
 }

@@ -9,6 +9,13 @@ spring:
     username: ${DB_USERNAME:root}
     password: ${DB_PASSWORD:12344321}
     driver-class-name: com.mysql.cj.jdbc.Driver
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      database: ${REDIS_DB:0}
+      timeout: ${REDIS_TIMEOUT:3s}
 
 app:
   ai:
@@ -17,6 +24,8 @@ app:
     api-key: ${AI_API_KEY:sk-ag-94e24cd0c411a9b3bf4d1e366842c2d5}
     chat-model: ${AI_CHAT_MODEL:qwen3.5-plus}
     vision-model: ${AI_VISION_MODEL:qwen3.5-plus}
+    face-api-url: ${AI_FACE_API_URL:}
+    face-api-key: ${AI_FACE_API_KEY:}
     enabled: ${AI_ENABLED:true}
   security:
     jwt-secret: ${APP_SECURITY_JWT_SECRET:please-change-this-jwt-secret-at-least-32-chars}
