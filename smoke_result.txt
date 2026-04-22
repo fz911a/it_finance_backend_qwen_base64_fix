@@ -1,9 +1,0 @@
-PASS | auth-login-refresh-batch | user=admin role=ADMIN
-FAIL | auth-refresh-token | error=The remote server returned an error: (403) Forbidden.
-FAIL | expense-approval-pending | message=No static resource api/expense/approval/pending.
-PASS | payment-allocate-manual-endpoint | expectedFail=No static resource api/payment/allocate-manual/999999.
-PASS | auth-login-refresh-batch | user=admin role=ADMIN
-PASS | auth-refresh-token | hasNewToken=true
-PASS | expense-approval-pending | count=8
-PASS | payment-allocate-auto-endpoint | expectedFail=??????¨¨?¡ã???????-???¡§
-PASS | payment-allocate-manual-endpoint | expectedFail=Incorrect result size: expected 1, actual 0

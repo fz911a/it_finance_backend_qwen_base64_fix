@@ -156,25 +156,38 @@ public class FinanceAssistController {
     }
 
     @GetMapping("/approval-todo")
-    public ApiResponse<List<Map<String, Object>>> approvalTodo() {
+    public ApiResponse<List<Map<String, Object>>> approvalTodo(@RequestParam(required = false) Long projectId) {
         List<Map<String, Object>> list = new ArrayList<>();
+
+        String expenseSql = "SELECT COUNT(*) FROM expense_record WHERE status IN ('待提交','待审核')"
+                + (projectId == null ? "" : " AND project_id = ?");
+        String invoiceSql = "SELECT COUNT(*) FROM invoice WHERE status = '未回款'"
+                + (projectId == null ? "" : " AND project_id = ?");
+
         Map<String, Object> a = new LinkedHashMap<>();
         a.put("title", "待审核费用单");
-        a.put("count", jdbcTemplate.queryForObject("SELECT COUNT(*) FROM expense_record WHERE status IN ('待提交','待审核')",
-                Integer.class));
+        a.put("count", projectId == null
+                ? jdbcTemplate.queryForObject(expenseSql, Integer.class)
+                : jdbcTemplate.queryForObject(expenseSql, Integer.class, projectId));
         list.add(a);
+
         Map<String, Object> b = new LinkedHashMap<>();
         b.put("title", "待核验发票");
-        b.put("count", jdbcTemplate.queryForObject("SELECT COUNT(*) FROM invoice WHERE status = '未回款'", Integer.class));
+        b.put("count", projectId == null
+                ? jdbcTemplate.queryForObject(invoiceSql, Integer.class)
+                : jdbcTemplate.queryForObject(invoiceSql, Integer.class, projectId));
         list.add(b);
         return ApiResponse.ok(list);
     }
 
     @GetMapping("/risk-alerts")
-    public ApiResponse<List<Map<String, Object>>> riskAlerts() {
+    public ApiResponse<List<Map<String, Object>>> riskAlerts(@RequestParam(required = false) Long projectId) {
         List<Map<String, Object>> list = new ArrayList<>();
-        BigDecimal receivable = jdbcTemplate.queryForObject("SELECT COALESCE(SUM(unpaid_amount),0) FROM invoice",
-                BigDecimal.class);
+        String receivableSql = "SELECT COALESCE(SUM(unpaid_amount),0) FROM invoice"
+                + (projectId == null ? "" : " WHERE project_id = ?");
+        BigDecimal receivable = projectId == null
+                ? jdbcTemplate.queryForObject(receivableSql, BigDecimal.class)
+                : jdbcTemplate.queryForObject(receivableSql, BigDecimal.class, projectId);
         if (receivable != null && receivable.compareTo(new BigDecimal("30000")) > 0) {
             Map<String, Object> m = new LinkedHashMap<>();
             m.put("level", "高");
@@ -182,8 +195,11 @@ public class FinanceAssistController {
             m.put("message", "当前未收账款达到 " + receivable + " 元，建议优先催收。");
             list.add(m);
         }
-        Integer pending = jdbcTemplate
-                .queryForObject("SELECT COUNT(*) FROM expense_record WHERE status IN ('待提交','待审核')", Integer.class);
+        String pendingSql = "SELECT COUNT(*) FROM expense_record WHERE status IN ('待提交','待审核')"
+                + (projectId == null ? "" : " AND project_id = ?");
+        Integer pending = projectId == null
+                ? jdbcTemplate.queryForObject(pendingSql, Integer.class)
+                : jdbcTemplate.queryForObject(pendingSql, Integer.class, projectId);
         if (pending != null && pending > 0) {
             Map<String, Object> m = new LinkedHashMap<>();
             m.put("level", "中");

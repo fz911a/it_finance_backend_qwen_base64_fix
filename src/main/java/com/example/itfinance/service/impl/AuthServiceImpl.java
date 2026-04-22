@@ -7,6 +7,7 @@ import com.example.itfinance.dto.LoginResponse;
 import com.example.itfinance.entity.User;
 import com.example.itfinance.security.JwtTokenProvider;
 import com.example.itfinance.service.AuthService;
+import com.example.itfinance.service.AuditLogService;
 import com.example.itfinance.service.FaceService;
 import io.jsonwebtoken.Claims;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -24,15 +25,18 @@ public class AuthServiceImpl implements AuthService {
     private final JwtTokenProvider jwtTokenProvider;
     private final JwtProperties jwtProperties;
     private final FaceService faceService;
+    private final AuditLogService auditLogService;
     private final Map<Long, User> userMap = new HashMap<>();
 
     public AuthServiceImpl(JdbcTemplate jdbcTemplate, PasswordEncoder passwordEncoder,
-            JwtTokenProvider jwtTokenProvider, JwtProperties jwtProperties, FaceService faceService) {
+            JwtTokenProvider jwtTokenProvider, JwtProperties jwtProperties, FaceService faceService,
+            AuditLogService auditLogService) {
         this.jdbcTemplate = jdbcTemplate;
         this.passwordEncoder = passwordEncoder;
         this.jwtTokenProvider = jwtTokenProvider;
         this.jwtProperties = jwtProperties;
         this.faceService = faceService;
+        this.auditLogService = auditLogService;
         initDemoUsers();
     }
 
@@ -74,6 +78,8 @@ public class AuthServiceImpl implements AuthService {
             if (jwtProperties.isAllowDemoLogin()) {
                 LoginResponse fallback = tryDemoLogin(request);
                 if (fallback != null) {
+                    auditLogService.logLogin(fallback.getUserId(), fallback.getUsername(), fallback.getRealName(),
+                            fallback.getRole(), "PASSWORD", "SUCCESS", "Demo login");
                     return fallback;
                 }
             }
@@ -100,6 +106,8 @@ public class AuthServiceImpl implements AuthService {
         String token = jwtTokenProvider.generateToken(user.id(), user.username(), user.role(), user.realName());
         String refreshToken = jwtTokenProvider.generateRefreshToken(user.id(), user.username(), user.role(),
                 user.realName());
+        auditLogService.logLogin(user.id(), user.username(), user.realName(), user.role(), "PASSWORD", "SUCCESS",
+                "Password login");
         return new LoginResponse(user.id(), user.username(), user.realName(), user.role(), token, refreshToken);
     }
 
@@ -117,6 +125,8 @@ public class AuthServiceImpl implements AuthService {
         String token = jwtTokenProvider.generateToken(user.id(), user.username(), user.role(), user.realName());
         String refreshToken = jwtTokenProvider.generateRefreshToken(user.id(), user.username(), user.role(),
                 user.realName());
+        auditLogService.logLogin(user.id(), user.username(), user.realName(), user.role(), "FACE", "SUCCESS",
+                "Face login");
         return new LoginResponse(user.id(), user.username(), user.realName(), user.role(), token, refreshToken);
     }
 

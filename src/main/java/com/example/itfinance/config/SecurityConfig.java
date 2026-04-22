@@ -37,6 +37,7 @@ public class SecurityConfig {
                                 "/api/payment/allocate-manual/**")
                         .hasAnyRole("ADMIN", "FINANCE")
                         .requestMatchers(HttpMethod.GET, "/api/face/list", "/api/face/logs").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/auth/login-logs").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/face/logs/**", "/api/face/profile/**")
                         .hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/face/enroll").hasRole("ADMIN")

@@ -1,12 +1,21 @@
 package com.example.itfinance.controller;
 
 import com.example.itfinance.common.ApiResponse;
-import com.example.itfinance.dto.*;
+import com.example.itfinance.dto.AiBookkeepingChatRequest;
+import com.example.itfinance.dto.AiGenericResponse;
+import com.example.itfinance.dto.AiInvoiceOcrRequest;
+import com.example.itfinance.dto.AiReportSummaryRequest;
+import com.example.itfinance.dto.RiskAnalyzeRequest;
+import com.example.itfinance.dto.ReceiptOcrRequest;
 import com.example.itfinance.service.AiService;
 import com.example.itfinance.service.IdempotencyService;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.Objects;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/ai")
@@ -29,11 +38,11 @@ public class AiController {
     public ApiResponse<AiGenericResponse> invoiceOcr(
             @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,
             @RequestBody AiInvoiceOcrRequest request) {
-        String fallback = "invoice:auto:"
-                + Objects.hash(request.getFileUrl(), request.getFileBase64(), request.getFileType());
-        String key = (idempotencyKey == null || idempotencyKey.isBlank()) ? fallback : "invoice:" + idempotencyKey;
-        if (!idempotencyService.tryAcquire(key)) {
-            return ApiResponse.fail("重复请求过于频繁，请稍后重试");
+        if (idempotencyKey != null && !idempotencyKey.isBlank()) {
+            String key = "invoice:" + idempotencyKey;
+            if (!idempotencyService.tryAcquire(key)) {
+                return ApiResponse.fail("重复请求过于频繁，请稍后重试");
+            }
         }
         return ApiResponse.ok(aiService.recognizeInvoice(request));
     }
@@ -42,10 +51,11 @@ public class AiController {
     public ApiResponse<AiGenericResponse> receiptOcr(
             @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,
             @RequestBody ReceiptOcrRequest request) {
-        String fallback = "receipt:auto:" + Objects.hash(request.getFileUrl(), request.getProjectId());
-        String key = (idempotencyKey == null || idempotencyKey.isBlank()) ? fallback : "receipt:" + idempotencyKey;
-        if (!idempotencyService.tryAcquire(key)) {
-            return ApiResponse.fail("重复请求过于频繁，请稍后重试");
+        if (idempotencyKey != null && !idempotencyKey.isBlank()) {
+            String key = "receipt:" + idempotencyKey;
+            if (!idempotencyService.tryAcquire(key)) {
+                return ApiResponse.fail("重复请求过于频繁，请稍后重试");
+            }
         }
         return ApiResponse.ok(aiService.recognizeReceipt(request));
     }

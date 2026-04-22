@@ -5,9 +5,11 @@ import com.example.itfinance.dto.FaceLoginRequest;
 import com.example.itfinance.dto.LoginRequest;
 import com.example.itfinance.dto.LoginResponse;
 import com.example.itfinance.service.AuthService;
+import com.example.itfinance.service.AuditLogService;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -15,9 +17,11 @@ import java.util.Map;
 @CrossOrigin
 public class AuthController {
     private final AuthService authService;
+    private final AuditLogService auditLogService;
 
-    public AuthController(AuthService authService) {
+    public AuthController(AuthService authService, AuditLogService auditLogService) {
         this.authService = authService;
+        this.auditLogService = auditLogService;
     }
 
     @PostMapping("/login")
@@ -25,6 +29,8 @@ public class AuthController {
         try {
             return ApiResponse.ok(authService.login(request));
         } catch (IllegalArgumentException e) {
+            auditLogService.logLogin(0L, request.getUsername(), null, null, "PASSWORD", "FAILED",
+                    e.getMessage());
             return ApiResponse.fail(e.getMessage());
         }
     }
@@ -34,6 +40,7 @@ public class AuthController {
         try {
             return ApiResponse.ok(authService.faceLogin(request.getImageUrl()));
         } catch (IllegalArgumentException e) {
+            auditLogService.logLogin(0L, "-", "-", "-", "FACE", "FAILED", e.getMessage());
             return ApiResponse.fail(e.getMessage());
         }
     }
@@ -46,5 +53,16 @@ public class AuthController {
         } catch (IllegalArgumentException e) {
             return ApiResponse.fail(e.getMessage());
         }
+    }
+
+    @GetMapping("/login-logs")
+    public ApiResponse<List<Map<String, Object>>> loginLogs() {
+        return ApiResponse.ok(auditLogService.listLoginLogs());
+    }
+
+    @DeleteMapping("/login-logs")
+    public ApiResponse<String> clearLoginLogs() {
+        auditLogService.clearLoginLogs();
+        return ApiResponse.ok("登录日志已清空", "ok");
     }
 }

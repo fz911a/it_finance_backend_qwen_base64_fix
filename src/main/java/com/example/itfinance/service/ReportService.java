@@ -5,12 +5,12 @@ import java.util.Map;
 public interface ReportService {
     Map<String, Object> profitReport(Long projectId, String startDate, String endDate);
 
-    Map<String, Object> getTrendData(String startDate, String endDate);
+    Map<String, Object> getTrendData(Long projectId, String startDate, String endDate);
 
-    Map<String, Object> getCategoryData(String startDate, String endDate);
+    Map<String, Object> getCategoryData(Long projectId, String startDate, String endDate);
 
-    Map<String, Object> getMonthlyComparisonData(String year);
+    Map<String, Object> getMonthlyComparisonData(Long projectId, String year);
 
-    // 导出功能
+    // 瀵煎嚭鍔熻兘
     byte[] exportReport(String format, Long projectId, String startDate, String endDate);
 }

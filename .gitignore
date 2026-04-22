@@ -3,7 +3,15 @@
 
 # Logs and temp files
 *.log
+*.err
+*.out
 *.tmp
+backend-start.*
+smoke_result.txt
+summary_out.txt
+tmp_ai_test.txt
+README_*.txt
+/uploads/*
 
 # IDE files
 /.idea/

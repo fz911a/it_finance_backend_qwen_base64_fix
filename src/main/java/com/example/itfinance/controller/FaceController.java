@@ -70,7 +70,7 @@ public class FaceController {
     }
 
     @PostMapping("/recognize")
-    public ApiResponse<Map<String, Object>> recognize(@RequestBody FaceRecognizeRequest request) {
+    public ApiResponse<Map<String, Object>> recognize(@Valid @RequestBody FaceRecognizeRequest request) {
         return ApiResponse.ok(faceService.recognize(request));
     }
 }

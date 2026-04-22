@@ -1,35 +1,43 @@
-# IT 项目智能财务管理系统后端（千问已配置版）
+# IT Finance Backend
 
-这版已经帮你填好了千问兼容网关参数：
-- Base URL 已配置
-- API Key 已写入 application.yml
-- 文本模型已配置
-- 视觉模型已配置
-- AI 已启用 enabled=true
+Spring Boot 后端，提供发票、付款、工资、报表、OCR、AI、风控和人脸相关接口。
 
-## 当前 AI 配置
-- provider: openai-compatible
-- base-url: https://llm.chudian.site/v1
-- endpoint: /chat/completions
-- chat-model: qwen3.5-plus
-- vision-model: qwen3.5-plus
+## 目录说明
 
-## 启动前
-1. 检查 MySQL 配置
+- `src/main/java`：业务代码
+- `src/main/resources/application.yml`：数据库、Redis、AI 和安全配置
+- `src/main/resources/sql/schema.sql`：初始化建表和演示数据
+- `docs/`：补充文档
+- `uploads/`：运行时上传文件目录
+
+## 本地启动
+
+1. 准备 MySQL 和 Redis
 2. 导入数据库：
+
 ```bash
 mysql -u root -p < src/main/resources/sql/schema.sql
 ```
-3. 启动：
+
+3. 启动服务：
+
 ```bash
 mvn spring-boot:run
 ```
 
+Windows 下也可以直接运行 `run.bat`。
+
+## 配置项
+
+- `DB_URL`、`DB_USERNAME`、`DB_PASSWORD`
+- `REDIS_HOST`、`REDIS_PORT`、`REDIS_PASSWORD`
+- `AI_PROVIDER`、`AI_BASE_URL`、`AI_API_KEY`
+- `APP_SECURITY_JWT_SECRET`
+
+`application.yml` 里保留了默认值，正式环境建议全部改成环境变量。
+
 ## 说明
-如果后续你发现 `qwen3.5-plus` 不支持视觉输入，只需要把 `vision-model` 改成你网关里支持图片输入的模型名即可，前端无需大改。
 
-
-## 本次修复
-- 已把本地 `/uploads/...` 图片自动转成 base64 Data URL 再发给模型
-- 不再依赖模型网关去访问你的 `localhost` 图片地址
-- 这样在本地 Windows / 小程序联调时更稳定
+- 上传图片会落到 `uploads/`
+- 如果要接入新的视觉模型，只需要修改 `AI_VISION_MODEL`
+- `docs/AI_INTEGRATION.md` 里有 AI 接入说明

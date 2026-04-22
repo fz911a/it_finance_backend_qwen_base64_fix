@@ -24,20 +24,23 @@ public class ReportController {
     }
 
     @GetMapping("/trend")
-    public ApiResponse<Map<String, Object>> getTrendData(@RequestParam(required = false) String startDate,
+    public ApiResponse<Map<String, Object>> getTrendData(@RequestParam(required = false) Long projectId,
+            @RequestParam(required = false) String startDate,
             @RequestParam(required = false) String endDate) {
-        return ApiResponse.ok(reportService.getTrendData(startDate, endDate));
+        return ApiResponse.ok(reportService.getTrendData(projectId, startDate, endDate));
     }
 
     @GetMapping("/category")
-    public ApiResponse<Map<String, Object>> getCategoryData(@RequestParam(required = false) String startDate,
+    public ApiResponse<Map<String, Object>> getCategoryData(@RequestParam(required = false) Long projectId,
+            @RequestParam(required = false) String startDate,
             @RequestParam(required = false) String endDate) {
-        return ApiResponse.ok(reportService.getCategoryData(startDate, endDate));
+        return ApiResponse.ok(reportService.getCategoryData(projectId, startDate, endDate));
     }
 
     @GetMapping("/monthly-comparison")
-    public ApiResponse<Map<String, Object>> getMonthlyComparisonData(@RequestParam(required = false) String year) {
-        return ApiResponse.ok(reportService.getMonthlyComparisonData(year));
+    public ApiResponse<Map<String, Object>> getMonthlyComparisonData(@RequestParam(required = false) Long projectId,
+            @RequestParam(required = false) String year) {
+        return ApiResponse.ok(reportService.getMonthlyComparisonData(projectId, year));
     }
 
     @GetMapping("/export/{format}")
